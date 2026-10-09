@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <conio.h>
+#include <windows.h>
+
+int main() {
+    int car = 2;
+    int obstacle = 0;
+    int score = 0;
+    char key;
+
+    while (1) {
+        system("cls");
+
+        printf("===== CAR RACING GAME =====\n");
+        printf("Score: %d\n", score);
+        printf("Controls: A = Left | D = Right | Q = Quit\n\n");
+
+        for (int i = 0; i < 10; i++) {
+            if (i == obstacle) {
+                if (car == 0)
+                    printf("  X  |     |     \n");
+                else if (car == 1)
+                    printf("      X  |     \n");
+                else
+                    printf("          X  \n");
+            } else if (i == 9) {
+                if (car == 0)
+                    printf("  🚗  |     |     \n");
+                else if (car == 1)
+                    printf("      🚗  |     \n");
+                else
+                    printf("          🚗\n");
+            } else {
+                printf("      |     |     \n");
+            }
+        }
+
+        if (obstacle == 9 - 1 && car == 0) {
+            printf("\nGAME OVER!\n");
+            break;
+        }
+
+        obstacle++;
+
+        if (obstacle >= 9) {
+            obstacle = 0;
+            score += 10;
+        }
+
+        if (kbhit()) {
+            key = getch();
+
+            if (key == 'a' && car > 0)
+                car--;
+            else if (key == 'd' && car < 2)
+                car++;
+            else if (key == 'q')
+                break;
+        }
+
+        Sleep(300);
+    }
+
+    printf("\nFinal Score: %d\n", score);
+    printf("Thanks for playing!\n");
+
+    return 0;
+}
