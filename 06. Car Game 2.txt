@@ -1,0 +1,125 @@
+#include stdio.h
+#include stdlib.h
+#include conio.h
+#include windows.h
+#include time.h
+
+#define ROAD_WIDTH 25
+#define ROAD_HEIGHT 15
+
+int carPosition = ROAD_WIDTH  2;
+int obstaclePosition;
+int obstacleRow = 0;
+int score = 0;
+int gameOver = 0;
+
+void setup() {
+srand((unsigned int)time(NULL));
+obstaclePosition = rand() % ROAD_WIDTH;
+}
+
+void drawRoad() {
+system(cls);
+
+```
+printf(=================================n);
+printf(       CAR RACING GAMEn);
+printf(=================================n);
+printf(Controls A = Left  D = Rightn);
+printf(          Q = Quitn);
+printf(Score %dnn, score);
+
+for (int row = 0; row  ROAD_HEIGHT; row++) {
+    printf();
+
+    for (int col = 0; col  ROAD_WIDTH; col++) {
+        if (row == ROAD_HEIGHT - 1 &&
+            col == carPosition) {
+            printf(A);
+        }
+        else if (row == obstacleRow &&
+                 col == obstaclePosition) {
+            printf(X);
+        }
+        else {
+            printf( );
+        }
+    }
+
+    printf(n);
+}
+
+printf(nAvoid the obstacles (X)!n);
+```
+
+}
+
+void input() {
+if (_kbhit()) {
+char key = _getch();
+
+```
+    if (key == 'a'  key == 'A') {
+        if (carPosition  0)
+            carPosition--;
+    }
+    else if (key == 'd'  key == 'D') {
+        if (carPosition  ROAD_WIDTH - 1)
+            carPosition++;
+    }
+    else if (key == 'q'  key == 'Q') {
+        gameOver = 1;
+    }
+}
+```
+
+}
+
+void update() {
+obstacleRow++;
+
+```
+if (obstacleRow == ROAD_HEIGHT - 1 &&
+    obstaclePosition == carPosition) {
+    gameOver = 1;
+    return;
+}
+
+if (obstacleRow = ROAD_HEIGHT) {
+    obstacleRow = 0;
+    obstaclePosition = rand() % ROAD_WIDTH;
+    score += 10;
+}
+```
+
+}
+
+int main() {
+setup();
+
+```
+while (!gameOver) {
+    drawRoad();
+    input();
+
+    if (!gameOver) {
+        update();
+        Sleep(150);
+    }
+}
+
+system(cls);
+
+printf(=================================n);
+printf(          GAME OVER!n);
+printf(=================================n);
+printf(Final Score %dn, score);
+printf(nThanks for playing!n);
+
+printf(nPress any key to exit...);
+_getch();
+
+return 0;
+```
+
+}
