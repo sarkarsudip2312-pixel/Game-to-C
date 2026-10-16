@@ -1,0 +1,237 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <conio.h>
+#include <windows.h>
+
+#define WIDTH 40
+#define HEIGHT 20
+#define MAX_BULLETS 100
+#define MAX_ENEMIES 15
+
+typedef struct {
+int x, y;
+int active;
+} Object;
+
+Object bullets[MAX_BULLETS];
+Object enemies[MAX_ENEMIES];
+
+int playerX = WIDTH / 2;
+int score = 0;
+int lives = 3;
+int gameOver = 0;
+int tick = 0;
+
+void setup() {
+srand((unsigned int)time(NULL));
+
+```
+for (int i = 0; i < MAX_BULLETS; i++)
+    bullets[i].active = 0;
+
+for (int i = 0; i < MAX_ENEMIES; i++)
+    enemies[i].active = 0;
+```
+
+}
+
+void spawnEnemy() {
+for (int i = 0; i < MAX_ENEMIES; i++) {
+if (!enemies[i].active) {
+enemies[i].x = rand() % WIDTH;
+enemies[i].y = 0;
+enemies[i].active = 1;
+break;
+}
+}
+}
+
+void shoot() {
+for (int i = 0; i < MAX_BULLETS; i++) {
+if (!bullets[i].active) {
+bullets[i].x = playerX;
+bullets[i].y = HEIGHT - 2;
+bullets[i].active = 1;
+break;
+}
+}
+}
+
+void input() {
+while (_kbhit()) {
+char key = _getch();
+
+```
+    if (key == 'a' || key == 'A') {
+        if (playerX > 0)
+            playerX--;
+    }
+    else if (key == 'd' || key == 'D') {
+        if (playerX < WIDTH - 1)
+            playerX++;
+    }
+    else if (key == ' ') {
+        shoot();
+    }
+    else if (key == 'q' || key == 'Q') {
+        gameOver = 1;
+    }
+}
+```
+
+}
+
+void update() {
+tick++;
+
+```
+// Create enemies
+if (tick % 8 == 0)
+    spawnEnemy();
+
+// Move bullets
+for (int i = 0; i < MAX_BULLETS; i++) {
+    if (bullets[i].active) {
+        bullets[i].y--;
+
+        if (bullets[i].y < 0)
+            bullets[i].active = 0;
+    }
+}
+
+// Move enemies
+if (tick % 3 == 0) {
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (enemies[i].active) {
+            enemies[i].y++;
+
+            if (enemies[i].y >= HEIGHT - 1) {
+                enemies[i].active = 0;
+                lives--;
+
+                if (lives <= 0)
+                    gameOver = 1;
+            }
+        }
+    }
+}
+
+// Bullet-enemy collision
+for (int i = 0; i < MAX_BULLETS; i++) {
+    if (!bullets[i].active)
+        continue;
+
+    for (int j = 0; j < MAX_ENEMIES; j++) {
+        if (enemies[j].active &&
+            bullets[i].x == enemies[j].x &&
+            bullets[i].y == enemies[j].y) {
+
+            bullets[i].active = 0;
+            enemies[j].active = 0;
+            score += 10;
+            break;
+        }
+    }
+}
+
+// Enemy-player collision
+for (int i = 0; i < MAX_ENEMIES; i++) {
+    if (enemies[i].active &&
+        enemies[i].y == HEIGHT - 1 &&
+        enemies[i].x == playerX) {
+
+        enemies[i].active = 0;
+        lives--;
+
+        if (lives <= 0)
+            gameOver = 1;
+    }
+}
+```
+
+}
+
+void draw() {
+system("cls");
+
+```
+printf("==========================================\n");
+printf("           SPACE SHOOTER GAME\n");
+printf("==========================================\n");
+printf("Score: %d     Lives: %d\n", score, lives);
+printf("Controls: A = Left | D = Right\n");
+printf("          SPACE = Shoot | Q = Quit\n\n");
+
+for (int y = 0; y < HEIGHT; y++) {
+    printf("|");
+
+    for (int x = 0; x < WIDTH; x++) {
+        char symbol = ' ';
+
+        if (y == HEIGHT - 1 && x == playerX)
+            symbol = '^';
+
+        for (int i = 0; i < MAX_BULLETS; i++) {
+            if (bullets[i].active &&
+                bullets[i].x == x &&
+                bullets[i].y == y) {
+                symbol = '|';
+                break;
+            }
+        }
+
+        for (int i = 0; i < MAX_ENEMIES; i++) {
+            if (enemies[i].active &&
+                enemies[i].x == x &&
+                enemies[i].y == y) {
+                symbol = 'V';
+                break;
+            }
+        }
+
+        printf("%c", symbol);
+    }
+
+    printf("|\n");
+}
+
+printf("\nDestroy enemies to earn points!\n");
+```
+
+}
+
+int main() {
+setup();
+
+```
+while (!gameOver) {
+    draw();
+    input();
+
+    if (!gameOver) {
+        update();
+        Sleep(100);
+    }
+}
+
+system("cls");
+
+printf("==========================================\n");
+printf("               GAME OVER!\n");
+printf("==========================================\n");
+printf("Final Score: %d\n", score);
+printf("Lives Remaining: %d\n", lives);
+
+if (score >= 100)
+    printf("Excellent shooting, Space Warrior!\n");
+else
+    printf("Keep practicing, Space Warrior!\n");
+
+printf("\nPress any key to exit...");
+_getch();
+
+return 0;
+```
+
+}
