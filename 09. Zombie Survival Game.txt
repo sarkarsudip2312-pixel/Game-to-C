@@ -1,0 +1,234 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <conio.h>
+#include <windows.h>
+
+#define WIDTH 40
+#define HEIGHT 15
+#define MAX_BULLETS 50
+#define MAX_ZOMBIES 15
+
+typedef struct {
+int x, y;
+int active;
+} Object;
+
+Object bullets[MAX_BULLETS];
+Object zombies[MAX_ZOMBIES];
+
+int playerX = WIDTH / 2;
+int playerY = HEIGHT / 2;
+int health = 100;
+int score = 0;
+int gameOver = 0;
+int tick = 0;
+
+void setup() {
+srand((unsigned int)time(NULL));
+
+```
+for (int i = 0; i < MAX_BULLETS; i++)
+    bullets[i].active = 0;
+
+for (int i = 0; i < MAX_ZOMBIES; i++)
+    zombies[i].active = 0;
+```
+
+}
+
+void spawnZombie() {
+for (int i = 0; i < MAX_ZOMBIES; i++) {
+if (!zombies[i].active) {
+zombies[i].x = rand() % WIDTH;
+zombies[i].y = rand() % HEIGHT;
+zombies[i].active = 1;
+break;
+}
+}
+}
+
+void shoot() {
+for (int i = 0; i < MAX_BULLETS; i++) {
+if (!bullets[i].active) {
+bullets[i].x = playerX;
+bullets[i].y = playerY - 1;
+bullets[i].active = 1;
+break;
+}
+}
+}
+
+void input() {
+while (_kbhit()) {
+char key = _getch();
+
+```
+    if (key == 'w' || key == 'W') {
+        if (playerY > 0) playerY--;
+    }
+    else if (key == 's' || key == 'S') {
+        if (playerY < HEIGHT - 1) playerY++;
+    }
+    else if (key == 'a' || key == 'A') {
+        if (playerX > 0) playerX--;
+    }
+    else if (key == 'd' || key == 'D') {
+        if (playerX < WIDTH - 1) playerX++;
+    }
+    else if (key == ' ') {
+        shoot();
+    }
+    else if (key == 'q' || key == 'Q') {
+        gameOver = 1;
+    }
+}
+```
+
+}
+
+void update() {
+tick++;
+
+```
+if (tick % 10 == 0)
+    spawnZombie();
+
+// Move bullets upward
+for (int i = 0; i < MAX_BULLETS; i++) {
+    if (bullets[i].active) {
+        bullets[i].y--;
+
+        if (bullets[i].y < 0)
+            bullets[i].active = 0;
+    }
+}
+
+// Zombies move toward the player
+if (tick % 4 == 0) {
+    for (int i = 0; i < MAX_ZOMBIES; i++) {
+        if (!zombies[i].active)
+            continue;
+
+        if (zombies[i].x < playerX)
+            zombies[i].x++;
+        else if (zombies[i].x > playerX)
+            zombies[i].x--;
+
+        if (zombies[i].y < playerY)
+            zombies[i].y++;
+        else if (zombies[i].y > playerY)
+            zombies[i].y--;
+
+        // Zombie touches player
+        if (zombies[i].x == playerX &&
+            zombies[i].y == playerY) {
+            health -= 10;
+            zombies[i].active = 0;
+
+            if (health <= 0)
+                gameOver = 1;
+        }
+    }
+}
+
+// Bullet-Zombie collision
+for (int i = 0; i < MAX_BULLETS; i++) {
+    if (!bullets[i].active)
+        continue;
+
+    for (int j = 0; j < MAX_ZOMBIES; j++) {
+        if (zombies[j].active &&
+            bullets[i].x == zombies[j].x &&
+            bullets[i].y == zombies[j].y) {
+
+            bullets[i].active = 0;
+            zombies[j].active = 0;
+            score += 10;
+            break;
+        }
+    }
+}
+```
+
+}
+
+void draw() {
+system("cls");
+
+```
+printf("==========================================\n");
+printf("           ZOMBIE SURVIVAL GAME\n");
+printf("==========================================\n");
+printf("Health: %d     Score: %d\n", health, score);
+printf("W/A/S/D = Move | SPACE = Shoot | Q = Quit\n\n");
+
+for (int y = 0; y < HEIGHT; y++) {
+    printf("|");
+
+    for (int x = 0; x < WIDTH; x++) {
+        char symbol = ' ';
+
+        if (x == playerX && y == playerY)
+            symbol = 'P';
+
+        for (int i = 0; i < MAX_BULLETS; i++) {
+            if (bullets[i].active &&
+                bullets[i].x == x &&
+                bullets[i].y == y) {
+                symbol = '|';
+                break;
+            }
+        }
+
+        for (int i = 0; i < MAX_ZOMBIES; i++) {
+            if (zombies[i].active &&
+                zombies[i].x == x &&
+                zombies[i].y == y) {
+                symbol = 'Z';
+                break;
+            }
+        }
+
+        printf("%c", symbol);
+    }
+
+    printf("|\n");
+}
+
+printf("\nEliminate zombies and survive!\n");
+```
+
+}
+
+int main() {
+setup();
+
+```
+while (!gameOver) {
+    draw();
+    input();
+
+    if (!gameOver) {
+        update();
+        Sleep(150);
+    }
+}
+
+system("cls");
+
+printf("==========================================\n");
+printf("               GAME OVER!\n");
+printf("==========================================\n");
+printf("Final Score: %d\n", score);
+printf("Final Health: %d\n", health);
+
+printf("\nThanks for playing!\n");
+printf("Press any key to exit...");
+
+_getch();
+
+return 0;
+```
+
+}
