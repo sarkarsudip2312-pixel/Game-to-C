@@ -1,0 +1,118 @@
+
+#include <stdio.h>
+#include <conio.h>
+#include <windows.h>
+#include <stdlib.h>
+
+#define WIDTH  21
+#define HEIGHT 11
+
+char map[HEIGHT][WIDTH + 1] = {
+    "#####################",
+    "#.........#.........#",
+    "#.###.###.#.###.###.#",
+    "#...................#",
+    "#.###.#.#####.#.###.#",
+    "#.....#...#...#.....#",
+    "#####.###.#.###.#####",
+    "#.........#.........#",
+    "#.###.###.#.###.###.#",
+    "#...................#",
+    "#####################"
+};
+
+int px = 1, py = 1;
+int score = 0;
+int totalDots = 0;
+int gameOver = 0;
+
+void hideCursor(void) {
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO info;
+    info.dwSize = 100;
+    info.bVisible = FALSE;
+    SetConsoleCursorInfo(h, &info);
+}
+
+void drawGame(void) {
+    system("cls");
+
+    printf("========== PAC-MAN GAME ==========\n");
+    printf("Move: W A S D | Quit: Q\n");
+    printf("Score: %d / %d\n\n", score, totalDots);
+
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            if (x == px && y == py)
+                printf("P");
+            else
+                printf("%c", map[y][x]);
+        }
+        printf("\n");
+    }
+
+    printf("\nCollect every dot (.) to win!\n");
+}
+
+int main(void) {
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            if (map[y][x] == '.')
+                totalDots++;
+        }
+    }
+
+    hideCursor();
+
+    while (!gameOver) {
+        drawGame();
+
+        if (score == totalDots) {
+            printf("\nYOU WIN! Congratulations!\n");
+            break;
+        }
+
+        if (_kbhit()) {
+            char key = _getch();
+
+            int nx = px;
+            int ny = py;
+
+            if (key == 'w' || key == 'W')
+                ny--;
+            else if (key == 's' || key == 'S')
+                ny++;
+            else if (key == 'a' || key == 'A')
+                nx--;
+            else if (key == 'd' || key == 'D')
+                nx++;
+            else if (key == 'q' || key == 'Q')
+                gameOver = 1;
+
+            if (!gameOver &&
+                nx >= 0 && nx < WIDTH &&
+                ny >= 0 && ny < HEIGHT &&
+                map[ny][nx] != '#') {
+
+                px = nx;
+                py = ny;
+
+                if (map[py][px] == '.') {
+                    map[py][px] = ' ';
+                    score++;
+                }
+            }
+        }
+
+        Sleep(100);
+    }
+
+    if (gameOver)
+        printf("\nGame Over! Final Score: %d\n", score);
+
+    printf("\nPress any key to exit...");
+    _getch();
+
+    return 0;
+}
+```
