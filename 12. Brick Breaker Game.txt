@@ -1,0 +1,176 @@
+
+#include <stdio.h>
+#include <conio.h>
+#include <windows.h>
+#include <stdlib.h>
+
+#define WIDTH 50
+#define HEIGHT 20
+#define BRICK_ROWS 5
+#define BRICK_COLS 10
+
+int ballX = WIDTH / 2;
+int ballY = HEIGHT - 5;
+int dx = 1;
+int dy = -1;
+
+int paddleX = WIDTH / 2 - 4;
+int paddleWidth = 9;
+
+int bricks[BRICK_ROWS][BRICK_COLS];
+int score = 0;
+int gameOver = 0;
+int won = 0;
+
+void drawGame(void) {
+    system("cls");
+
+    printf("========== BRICK BREAKER ==========\n");
+    printf("Controls: A = Left | D = Right | Q = Quit\n");
+    printf("Score: %d\n\n", score);
+
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            int printed = 0;
+
+            if (y == 0 || y == HEIGHT - 1 ||
+                x == 0 || x == WIDTH - 1) {
+                printf("#");
+                continue;
+            }
+
+            if (x == ballX && y == ballY) {
+                printf("O");
+                continue;
+            }
+
+            if (y == HEIGHT - 2 &&
+                x >= paddleX &&
+                x < paddleX + paddleWidth) {
+                printf("=");
+                continue;
+            }
+
+            if (y >= 2 && y < 2 + BRICK_ROWS) {
+                int row = y - 2;
+                int col = (x - 2) / 4;
+
+                if (x >= 2 && x < 2 + BRICK_COLS * 4 &&
+                    (x - 2) % 4 != 3 &&
+                    bricks[row][col]) {
+                    printf("[]");
+                    x++;
+                    continue;
+                }
+            }
+
+            if (!printed)
+                printf(" ");
+        }
+        printf("\n");
+    }
+}
+
+int remainingBricks(void) {
+    int count = 0;
+
+    for (int r = 0; r < BRICK_ROWS; r++) {
+        for (int c = 0; c < BRICK_COLS; c++) {
+            count += bricks[r][c];
+        }
+    }
+
+    return count;
+}
+
+int main(void) {
+    for (int r = 0; r < BRICK_ROWS; r++) {
+        for (int c = 0; c < BRICK_COLS; c++) {
+            bricks[r][c] = 1;
+        }
+    }
+
+    while (!gameOver && !won) {
+        drawGame();
+
+        if (_kbhit()) {
+            char key = _getch();
+
+            if (key == 'a' || key == 'A') {
+                if (paddleX > 1)
+                    paddleX -= 2;
+            } else if (key == 'd' || key == 'D') {
+                if (paddleX + paddleWidth < WIDTH - 1)
+                    paddleX += 2;
+            } else if (key == 'q' || key == 'Q') {
+                gameOver = 1;
+                break;
+            }
+        }
+
+        int nextX = ballX + dx;
+        int nextY = ballY + dy;
+
+        if (nextX <= 1 || nextX >= WIDTH - 2)
+            dx = -dx;
+
+        if (nextY <= 1)
+            dy = -dy;
+
+        nextX = ballX + dx;
+        nextY = ballY + dy;
+
+        /* Brick collision */
+        if (nextY >= 2 && nextY < 2 + BRICK_ROWS &&
+            nextX >= 2 && nextX < 2 + BRICK_COLS * 4) {
+
+            int row = nextY - 2;
+            int col = (nextX - 2) / 4;
+
+            if (col >= 0 && col < BRICK_COLS &&
+                bricks[row][col]) {
+                bricks[row][col] = 0;
+                score += 10;
+                dy = -dy;
+            }
+        }
+
+        /* Paddle collision */
+        if (dy > 0 &&
+            nextY == HEIGHT - 2 &&
+            nextX >= paddleX &&
+            nextX < paddleX + paddleWidth) {
+            dy = -1;
+
+            if (nextX < paddleX + paddleWidth / 3)
+                dx = -1;
+            else if (nextX >= paddleX + 2 * paddleWidth / 3)
+                dx = 1;
+        }
+
+        ballX += dx;
+        ballY += dy;
+
+        if (ballY >= HEIGHT - 2)
+            gameOver = 1;
+
+        if (remainingBricks() == 0)
+            won = 1;
+
+        Sleep(100);
+    }
+
+    system("cls");
+
+    if (won)
+        printf("\nYOU WIN! All bricks destroyed!\n");
+    else
+        printf("\nGAME OVER!\n");
+
+    printf("Final Score: %d\n", score);
+    printf("Press any key to exit...");
+    _getch();
+
+    return 0;
+}
+
